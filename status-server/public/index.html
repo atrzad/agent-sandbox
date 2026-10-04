@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Agent Sandbox</title>
+<style>
+  body { margin:0; font-family: monospace; background:#111; color:#ddd; }
+  #panes { display:flex; gap:8px; padding:8px; flex-wrap:wrap; }
+  .pane { flex:1; min-width:320px; background:#1b1b1b; border:1px solid #333; border-radius:6px; padding:8px; }
+  .pane h3 { margin:0 0 6px; font-size:13px; color:#8cf; }
+  .pane pre { white-space:pre-wrap; word-break:break-word; font-size:12px; max-height:220px; overflow:auto; }
+  #updated { padding:0 8px 8px; font-size:11px; color:#888; }
+  iframe { width:100%; height:70vh; border:0; border-top:1px solid #333; }
+</style>
+</head>
+<body>
+  <div id="panes"></div>
+  <div id="updated"></div>
+  <iframe src="//" id="term"></iframe>
+<script>
+  document.getElementById('term').src = `${location.protocol}//${location.hostname}:7681`;
+  async function refresh() {
+    try {
+      const r = await fetch('/status.json');
+      const s = await r.json();
+      document.getElementById('panes').innerHTML = s.panes.map(p =>
+        `<div class="pane"><h3>${p.label}</h3><pre>${(p.text||'').replace(/</g,'&lt;')}</pre></div>`
+      ).join('') || '<i>no panes found</i>';
+      document.getElementById('updated').textContent =
+        (s.error ? 'error: ' + s.error + ' — ' : '') + 'updated ' + s.updatedAt;
+    } catch (e) { /* ignore transient poll failures */ }
+  }
+  refresh();
+  setInterval(refresh, 2000);
+</script>
+</body>
+</html>

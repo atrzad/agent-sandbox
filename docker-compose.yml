@@ -1,0 +1,29 @@
+services:
+  agent-sandbox:
+    build:
+      context: .
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+    image: agent-sandbox:local
+    container_name: agent-sandbox
+    restart: unless-stopped
+    init: true                # docker-managed tini as PID 1; reaps zombies
+    env_file: .env
+    environment:
+      CLAUDE_PROJECT_DIR: /home/ayo/Projects
+      CODEX_PROJECT_DIR: /home/ayo/Projects
+      TTYD_PORT: "7681"
+      STATUS_PORT: "8080"
+    ports:
+      - "7681:7681"   # ttyd — LAN reachable
+      - "8080:8080"   # status dashboard
+    volumes:
+      - /home/ayo/.claude:/home/ayo/.claude
+      - /home/ayo/.claude.json:/home/ayo/.claude.json
+      - /home/ayo/.codex:/home/ayo/.codex
+      - /home/ayo/Projects:/home/ayo/Projects
+      - agent_state:/home/ayo/.agent-state
+
+volumes:
+  agent_state:
